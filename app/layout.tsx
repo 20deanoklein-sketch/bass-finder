@@ -31,6 +31,7 @@ export default function RootLayout({
            <a href="/" className="hover:underline">Home</a>
            <a href="/tournaments" className="hover:underline">Tournaments</a>
            <a href="/calendar" className="hover:underline">Calendar</a>
+           <a href="/submit" className="hover:underline">Submit</a>
 
         </nav>
 
