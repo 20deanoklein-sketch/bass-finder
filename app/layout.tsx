@@ -30,6 +30,8 @@ export default function RootLayout({
         <nav className="p-4 bg-gray-600 flex gap-4">
            <a href="/" className="hover:underline">Home</a>
            <a href="/tournaments" className="hover:underline">Tournaments</a>
+           <a href="/calendar" className="hover:underline">Calendar</a>
+
         </nav>
 
         {children}
