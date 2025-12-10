@@ -1,11 +1,33 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 export default function AdminPage() {
+    const router = useRouter();
+
+    useEffect(() => {
+     supabase.auth.getUser().then(({ data }) => {
+  const user = data.user;
+  if (!user) {
+    router.push("/login");
+    return;
+  }
+
+  // Check admin role
+  const role = user.user_metadata?.role;
+  if (role !== "admin") {
+    router.push("/dashboard"); // redirect non-admins
+  }
+});
+
+    }, []);
+    
+
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
 
   // Load pending submissions
   const loadPending = async () => {

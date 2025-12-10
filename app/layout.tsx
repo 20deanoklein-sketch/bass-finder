@@ -1,3 +1,8 @@
+import AuthNav from "./components/AuthNav";
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
+import { AuthProvider } from "./providers";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -24,20 +29,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <nav className="p-4 bg-gray-600 flex gap-4">
-           <a href="/" className="hover:underline">Home</a>
-           <a href="/tournaments" className="hover:underline">Tournaments</a>
-           <a href="/calendar" className="hover:underline">Calendar</a>
-           <a href="/submit" className="hover:underline">Submit</a>
-           <a href="/admin" className="hover:underline">Admin</a>
+     <body className={inter.className}>
+  <AuthProvider>
+    <header className="p-4 border-b">
+      <nav className="flex gap-6">
+        <a href="/" className="hover:underline">Home</a>
+        <a href="/tournaments" className="hover:underline">Tournaments</a>
+        <a href="/calendar" className="hover:underline">Calendar</a>
+        <a href="/submit" className="hover:underline">Submit</a>
+        <a href="/dashboard" className="hover:underline">Dashboard</a>
+        <a href="/schedule" className="hover:underline">My Schedule</a>
+        <AuthNav />
+      </nav>
+    </header>
 
-        </nav>
+    {children}
+  </AuthProvider>
+</body>
 
-        {children}
-      </body>
     </html>
   );
 }
