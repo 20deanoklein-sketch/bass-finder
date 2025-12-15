@@ -119,7 +119,15 @@ export default function TournamentsPage() {
             key={t.id}
             className="border rounded-xl p-4 shadow-sm hover:shadow-md transition"
           >
-            <h2 className="text-xl font-semibold mb-2">{t.name}</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              <a
+                  href={`/tournaments/${t.id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {t.name}
+             </a>
+            </h2>
+
             <p>
               <strong>Lake:</strong> {t.lake}
             </p>
