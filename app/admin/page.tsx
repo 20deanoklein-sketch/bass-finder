@@ -27,6 +27,7 @@ export default function AdminPage() {
 
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
 
   // Load pending submissions
@@ -47,41 +48,59 @@ export default function AdminPage() {
   }, []);
 
   // Approve submission → move to tournaments table
-  const approve = async (item: any) => {
-    // Insert into tournaments
-    const { error: insertError } = await supabase.from("tournaments").insert({
-      name: item.name,
-      lake: item.lake,
-      trail: item.trail,
-      date: item.date,
-      entry_fee: item.entry_fee,
-      description: item.description,
-      state: item.state,
-    });
+ const approve = async (item: any) => {
+  if (actionLoading) return;
+  setActionLoading(true);
+  if (item.state !== "OK") {
+  alert("MVP launch is Oklahoma-only.");
+  setActionLoading(false);
+  return;
+}
 
-    if (insertError) {
-      console.error(insertError);
-      return;
-    }
 
-    // Delete from pending submissions
-    await supabase.from("pending_submissions").delete().eq("id", item.id);
+  const { error: insertError } = await supabase.from("tournaments").insert({
+    name: item.name?.trim(),
+    lake: item.lake?.trim(),
+    trail: item.trail?.trim(),
+    date: item.date,
+    entry_fee: item.entry_fee,
+    description: item.description,
+    state: item.state?.toUpperCase(),
+  });
 
-    // Refresh page
-    loadPending();
-  };
+  if (insertError) {
+    console.error(insertError);
+    setActionLoading(false);
+    return;
+  }
+
+  await supabase.from("pending_submissions").delete().eq("id", item.id);
+
+  setActionLoading(false);
+  loadPending();
+};
+
 
   // Reject submission → delete row
-  const reject = async (item: any) => {
-    await supabase.from("pending_submissions").delete().eq("id", item.id);
-    loadPending();
-  };
+ const reject = async (item: any) => {
+  if (actionLoading) return;
+  setActionLoading(true);
+
+  await supabase.from("pending_submissions").delete().eq("id", item.id);
+
+  setActionLoading(false);
+  loadPending();
+};
 
   if (loading) return <p className="p-8">Loading...</p>;
 
   return (
     <main className="p-8">
       <h1 className="text-3xl font-bold mb-6">Admin — Pending Tournaments</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Review submitted tournaments before publishing them publicly.
+        </p>
+
 
       {pending.length === 0 ? (
         <p>No pending submissions.</p>
@@ -99,17 +118,25 @@ export default function AdminPage() {
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={() => approve(item)}
-                  className="p-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={actionLoading}
+                  className={`p-2 rounded text-white ${
+                    actionLoading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
-                  Approve
+                  {actionLoading ? "Processing..." : "Approve"}
                 </button>
+
 
                 <button
                   onClick={() => reject(item)}
-                  className="p-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  disabled={actionLoading}
+                  className={`p-2 rounded text-white ${
+                    actionLoading ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
                   Reject
                 </button>
+
               </div>
             </div>
           ))}
