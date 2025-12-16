@@ -15,6 +15,9 @@ export default function TournamentsPage() {
   const [lake, setLake] = useState("");
   const [trail, setTrail] = useState("");
   const [date, setDate] = useState("");
+  // Dropdown options (Day 15)
+  const [lakes, setLakes] = useState<string[]>([]);
+  const [trails, setTrails] = useState<string[]>([]);
 
   // Fetch tournaments with filters (Day 5 logic)
   const fetchTournaments = async () => {
@@ -34,10 +37,32 @@ export default function TournamentsPage() {
     if (!error && data) setTournaments(data);
     setLoading(false);
   };
+  // Load dropdown options (Day 15)
+  const loadFilterOptions = async () => {
+    const { data, error } = await supabase
+      .from("tournaments")
+      .select("lake, trail");
+
+    if (error || !data) return;
+
+    const uniqueLakes = Array.from(new Set(data.map((d: any) => d.lake)))
+      .filter(Boolean)
+      .sort();
+
+    const uniqueTrails = Array.from(new Set(data.map((d: any) => d.trail)))
+      .filter(Boolean)
+      .sort();
+
+    setLakes(uniqueLakes);
+    setTrails(uniqueTrails);
+  };
 
   useEffect(() => {
     fetchTournaments();
   }, [lake, trail, date]);
+  useEffect(() => {
+    loadFilterOptions();
+  }, []);
 
   // ⭐ Save to Schedule (Day 12 logic)
   const handleSave = async (tournamentId: string) => {
@@ -71,21 +96,33 @@ export default function TournamentsPage() {
 
       {/* Filters row (Day 5) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Filter by Lake"
+        <select
           value={lake}
           onChange={(e) => setLake(e.target.value)}
-          className="border p-2 rounded"
-        />
+          className="border p-2 rounded bg-white text-gray-900 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="">All Lakes</option>
+          {lakes.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
 
-        <input
-          type="text"
-          placeholder="Filter by Trail"
+
+        <select
           value={trail}
           onChange={(e) => setTrail(e.target.value)}
-          className="border p-2 rounded"
-        />
+          className="border p-2 rounded bg-white text-gray-900 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="">All Trails</option>
+          {trails.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+
 
         <input
           type="date"
