@@ -15,6 +15,9 @@ export default function TournamentsPage() {
   const [lake, setLake] = useState("");
   const [trail, setTrail] = useState("");
   const [date, setDate] = useState("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   // Dropdown options (Day 15)
   const [lakes, setLakes] = useState<string[]>([]);
   const [trails, setTrails] = useState<string[]>([]);
@@ -27,7 +30,9 @@ export default function TournamentsPage() {
       .from("tournaments")
       .select("*")
       .order("date", { ascending: true });
-
+    if (debouncedSearch) {
+      query = query.ilike("name", `%${debouncedSearch}%`);
+    }
     if (lake) query = query.eq("lake", lake);
     if (trail) query = query.eq("trail", trail);
     if (date) query = query.eq("date", date);
@@ -58,8 +63,35 @@ export default function TournamentsPage() {
   };
 
   useEffect(() => {
-    fetchTournaments();
-  }, [lake, trail, date]);
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+useEffect(() => {
+  const fetchTournaments = async () => {
+    setLoading(true);
+
+    let query = supabase
+      .from("tournaments")
+      .select("*")
+      .order("date", { ascending: true });
+
+    if (debouncedSearch) query = query.ilike("name", `%${debouncedSearch}%`);
+    if (lake) query = query.eq("lake", lake);
+    if (trail) query = query.eq("trail", trail);
+    if (date) query = query.eq("date", date);
+
+    const { data, error } = await query;
+
+    if (!error && data) setTournaments(data);
+    setLoading(false);
+  };
+
+  fetchTournaments();
+}, [lake, trail, date, debouncedSearch]);
+
+
+
   useEffect(() => {
     loadFilterOptions();
   }, []);
@@ -95,7 +127,15 @@ export default function TournamentsPage() {
       <h1 className="text-3xl font-bold mb-6">Oklahoma Tournaments</h1>
 
       {/* Filters row (Day 5) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search tournaments..."
+          className="border p-2 rounded"
+        />
+
         <select
           value={lake}
           onChange={(e) => setLake(e.target.value)}
@@ -108,6 +148,7 @@ export default function TournamentsPage() {
             </option>
           ))}
         </select>
+
 
 
         <select
@@ -130,7 +171,7 @@ export default function TournamentsPage() {
           onChange={(e) => setDate(e.target.value)}
           className="border p-2 rounded"
         />
-
+       
         <button
           onClick={() => {
             setLake("");
@@ -142,7 +183,9 @@ export default function TournamentsPage() {
           Reset Filters
         </button>
       </div>
-
+<p className="text-sm text-gray-600 mb-4">
+  Showing {tournaments.length} tournament{tournaments.length === 1 ? "" : "s"}
+</p>
       {/* Loading / empty states */}
       {loading && <p>Loading tournaments...</p>}
       {!loading && tournaments.length === 0 && (
