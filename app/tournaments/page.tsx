@@ -137,7 +137,7 @@ export default function TournamentsPage() {
             setTrail("");
             setDate("");
           }}
-          className="border p-2 rounded bg-gray-200 hover:bg-gray-300"
+          className="border p-2 rounded bg-gray-400 hover:bg-gray-300"
         >
           Reset Filters
         </button>
